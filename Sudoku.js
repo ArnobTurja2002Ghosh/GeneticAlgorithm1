@@ -14,12 +14,12 @@
 ///\/\/\\\/\/\//\\///\//\\\///////\/\/\\\/\/\//\\///\//\\\//////
 
 class Sudoku {
-    
+       
     constructor(size) {
         this.size = size;
         this.sqSize = Math.sqrt(size);
         this.board = [];
-        for (var i=0; i<size; i++) { this.board[i] = 0; }
+        for (var i=0; i<size*size; i++) { this.board[i] = 0; }
     }
     
     getIndex(row, col) {
@@ -27,8 +27,8 @@ class Sudoku {
     }
 
     randomize() {
-        for (var i=0; i<this.size; i++) { 
-            this.board[i] = [65, 66, 78, 79, 82][Math.floor(Math.random() * this.size)]; 
+        for (var i=0; i<this.size*this.size; i++) { 
+            this.board[i] = Math.floor(Math.random() * this.size) + 1; 
         }
     }
 
@@ -50,41 +50,37 @@ class Sudoku {
             }
         }
         // get the column conflicts
-        // for (let r=0; r<this.size; r++) {
-        //     if (r != row && (this.get(r,col) == this.get(row,col))) {
-        //         sum++;
-        //         break;
-        //     }
-        // }
+        for (let r=0; r<this.size; r++) {
+            if (r != row && (this.get(r,col) == this.get(row,col))) {
+                sum++;
+                break;
+            }
+        }
 
-        // let sr = Math.floor(row / this.sqSize) * this.sqSize;
-        // let sc = Math.floor(col / this.sqSize) * this.sqSize;
-        // for (let dr=0; dr<this.sqSize; dr++) {
-        //     for (let dc=0; dc<this.sqSize; dc++) {
-        //         let r = sr + dr;
-        //         let c = sc + dc;
-        //         if (r != row && c != col && (this.get(r,c) == this.get(row,col))) {
-        //             sum++;
-        //             break;
-        //         }
-        //     }
-        // }
+        let sr = Math.floor(row / this.sqSize) * this.sqSize;
+        let sc = Math.floor(col / this.sqSize) * this.sqSize;
+        for (let dr=0; dr<this.sqSize; dr++) {
+            for (let dc=0; dc<this.sqSize; dc++) {
+                let r = sr + dr;
+                let c = sc + dc;
+                if (r != row && c != col && (this.get(r,c) == this.get(row,col))) {
+                    sum++;
+                    break;
+                }
+            }
+        }
        
         return sum;
     }
 
     setArray(array) {
         this.board = array;
-        this.size = array.length;
+        this.size = Math.round(Math.sqrt(array.length));
         this.sqSize = Math.sqrt(this.size);
     }
 }
 
-s1=new Sudoku(5);
-s1.setArray(79, 78, 65, 65, 82);
-for(let i=0; i<5; i++){
-console.log(s1.numConflicts(0, i));
-}// Copyright (C) David Churchill - All Rights Reserved
+// Copyright (C) David Churchill - All Rights Reserved
 // COMP3200 - 2023-09 - Assignment 4
 // Written by David Churchill (dave.churchill@gmail.com)
 // Unauthorized copying of these files are strictly prohibited

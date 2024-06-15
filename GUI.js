@@ -103,9 +103,9 @@ class GUI {
     addSlider(container, id, left, top, width, height, value, min, max, onchange) {
         let slider = this.createElement('input', id, left, top, width, height);
         slider.type = 'range';
+        slider.value = value;
         slider.min = min;
         slider.max = max;
-        slider.value = value;
         slider.oninput = onchange;
         container.appendChild(slider);
     }

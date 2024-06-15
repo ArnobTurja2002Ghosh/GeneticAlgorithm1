@@ -19,15 +19,15 @@ class GASettings {
     constructor (sudokuSize) {
         
         this.fitnessFunction = SudokuFitness;
-        this.individualSize = sudokuSize;
+        this.individualSize = sudokuSize * sudokuSize;
         this.populationSize = 100;
-        this.elitismRatio = 0.01;
+        this.elitismRatio = 0.1;
         this.mutationRate = 0.2;
-        this.randomRatio = 0.5;
+        this.randomRatio = 0.05;
         this.individualValues = [];
-        for(let i=0; i<26; i++){this.individualValues.push(65+i);}
-        for(let i=0; i<26; i++){this.individualValues.push(97+i);}
-        
+        for (let i = 1; i <= sudokuSize; i++) {
+            this.individualValues.push(i);
+        }
     }
        
     getRandomGeneValue = function () {
