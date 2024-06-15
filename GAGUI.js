@@ -20,7 +20,7 @@ class GAGUI extends GUI {
         // construct a GUI in the given container
         super(container);
 
-		this.sudoku = new Sudoku(5);
+		this.sudoku = new Sudoku(9);
 		this.sqSize = 512 / this.sudoku.size;
 		this.sudoku.randomize();
 		this.settings = new GASettings(this.sudoku.size);
@@ -34,7 +34,8 @@ class GAGUI extends GUI {
 	reset() {
 		
 		// get the sudoku size from the slider on the page
-		let sudokuSize = 5;
+		let sudokuSize = document.getElementById('sizeslider').value *  
+						 document.getElementById('sizeslider').value;
        
 		// set up the sudoku board based on the current size
 		this.sudoku = new Sudoku(sudokuSize);
@@ -99,26 +100,25 @@ class GAGUI extends GUI {
 		let t0 = performance.now();
 		this.fg_ctx.clearRect(0, 0, this.bg.width, this.bg.height);
 
-		
-		for (let c = 0; c < 5; c++) {
+		for (let r = 0; r <= this.sudoku.size; r++) {
+			for (let c = 0; c <= this.sudoku.size; c++) {
 
-			if (this.coloring == "sudoku") {
-				let conflicts = this.sudoku.numConflicts(0, c) + 1;
-				let shade = Math.floor(255 / conflicts);
-				this.fg_ctx.fillStyle = "rgb(255," + shade + "," + shade + ")";
-				//console.log(this.sudoku.board, conflicts);
-			} else {
-				let ratio = this.sudoku.get(r,c)/9;
-				let shade = Math.floor((1-ratio)*255);
-				this.fg_ctx.fillStyle = "rgb(255," + shade + "," + shade + ")";
+				if (this.coloring == "sudoku") {
+					let conflicts = this.sudoku.numConflicts(r, c) + 1;
+					let shade = Math.floor(255 / conflicts);
+					this.fg_ctx.fillStyle = "rgb(255," + shade + "," + shade + ")";
+				} else {
+					let ratio = this.sudoku.get(r,c)/9;
+					let shade = Math.floor((1-ratio)*255);
+					this.fg_ctx.fillStyle = "rgb(255," + shade + "," + shade + ")";
+				}
+				this.fg_ctx.fillRect(c * this.sqSize, r * this.sqSize, this.sqSize, this.sqSize);
 			}
-			this.fg_ctx.fillRect(c * this.sqSize, 0 * this.sqSize, this.sqSize, this.sqSize);
 		}
-		
 
 		// draw thin lines
 		this.fg_ctx.fillStyle = "#000000";
-		for (let r = 0; r <= 1; r++) {
+		for (let r = 0; r <= this.sudoku.size; r++) {
 			this.fg_ctx.beginPath();
 			this.fg_ctx.lineWidth = ((r % this.sudoku.sqSize) == 0) ? 5 : 1;
 			this.fg_ctx.moveTo(0, r * this.sqSize);
@@ -130,22 +130,18 @@ class GAGUI extends GUI {
 			this.fg_ctx.beginPath();
 			this.fg_ctx.lineWidth = ((c % this.sudoku.sqSize) == 0) ? 5 : 1;
 			this.fg_ctx.moveTo(c * this.sqSize, 0);
-			this.fg_ctx.lineTo(c * this.sqSize, this.sqSize);
+			this.fg_ctx.lineTo(c * this.sqSize, this.fg.height);
 			this.fg_ctx.stroke();
 		}
-		let s="Hi, I am ";
-		for (let r = 0; r < 1; r++) {
+
+		for (let r = 0; r < this.sudoku.size; r++) {
 			for (let c = 0; c < this.sudoku.size; c++) {
 				let txt = this.sudoku.get(r, c);
-				s+=String.fromCharCode(txt);
 				let tsize = this.fg_ctx.measureText(txt).width / 2;
 				this.fg_ctx.fillText(this.sudoku.get(r, c), (c + 0.5) * this.sqSize - tsize, (r + 0.5) * this.sqSize + this.fgFontSize / 2);
-				//console.log(this.sudoku.board, this.sudoku.size);
 			}
 		}
 
-		s+="."
-		this.fg_ctx.fillText(s, 0, 200);
 		let t1 = performance.now();
 		let ms = Math.round(t1 - t0);
 	}
@@ -223,7 +219,6 @@ class GAGUI extends GUI {
 		this.addText(this.controlDiv, 'poplabel', c1, top + s*skip, tWidth, cHeight, "Population Size:");
 		this.addSlider(this.controlDiv, 'popslider', c2, top + s*skip, cWidth, cHeight-10, 200, 20, 1000, function() { this.gui.setPopulationSize(); });
 		this.addText(this.controlDiv, 'popvalue', c3, top + s++*skip, cWidth, cHeight, document.getElementById("popslider").value);
-		console.log(document.getElementById("popslider").value, document.getElementById("popslider").max);
 
 		// Mutation Percentage Selection
 		this.addText(this.controlDiv, 'mutlabel', c1, top + s*skip, tWidth, cHeight, "% Individuals Mutated :");
@@ -239,8 +234,8 @@ class GAGUI extends GUI {
 		this.addText(this.controlDiv, 'elitelabel', c1, top + s*skip, tWidth, cHeight, "% Elite Genes Survive :");
 		this.addSlider(this.controlDiv, 'eliteslider', c2, top + s*skip, cWidth, cHeight-10, 10, 0, 100, function() { this.gui.setEliteSurvivalRate(); });
 		this.addText(this.controlDiv, 'elitevalue', c3, top + s++*skip, cWidth, cHeight, document.getElementById("eliteslider").value);
-
 	}
+
 }
 
 
