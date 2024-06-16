@@ -39,10 +39,11 @@ function GAEvolve(population, settings) {
     for(let i=0; i<settings.populationSize; i++){
         fitnessSum+=population[i].fitness;
     }
-    
+    //console.log(fitnessSum);
     while (nextPopulation.length < settings.populationSize){
         let parent1 = RouletteWheelSelection(population, fitnessSum);
         let parent2 = RouletteWheelSelection(population, fitnessSum);
+        
         let child1  = CrossOver(parent1, parent2, settings);
         let child2  = CrossOver(parent2, parent1, settings);
         MutateIndividual(child1, settings);
@@ -99,16 +100,14 @@ function MutateIndividual(individual, settings) {
 // Although convention is to provide explanation above the function, to keep the codes closer to each other for better readability,
 // justification of this code is written below this function.
 function SudokuFitness(array) {
-    let size = Math.round(Math.sqrt(array.length));
+    let size = Math.sqrt(array.length);
     let s = new Sudoku(size);
+    let s1=[65, 114, 110, 111, 98];
     s.setArray(array);
     let fitness = 0;
     
-    for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-            let conflicts = s.numConflicts(r, c) + 1;
-            fitness+=1/conflicts;
-        }
+    for (let c = 0; c < array.length; c++) {
+        fitness += 1/(1+Math.abs(s1[c]-array[c]));
     }
     
     return fitness;

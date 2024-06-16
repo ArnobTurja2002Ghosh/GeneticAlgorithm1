@@ -20,7 +20,7 @@ class GAGUI extends GUI {
         // construct a GUI in the given container
         super(container);
 
-		this.sudoku = new Sudoku(9);
+		this.sudoku = new Sudoku(5);
 		this.sqSize = 512 / this.sudoku.size;
 		this.sudoku.randomize();
 		this.settings = new GASettings(this.sudoku.size);
@@ -34,8 +34,7 @@ class GAGUI extends GUI {
 	reset() {
 		
 		// get the sudoku size from the slider on the page
-		let sudokuSize = document.getElementById('sizeslider').value *  
-						 document.getElementById('sizeslider').value;
+		let sudokuSize = 5;
        
 		// set up the sudoku board based on the current size
 		this.sudoku = new Sudoku(sudokuSize);
@@ -99,26 +98,29 @@ class GAGUI extends GUI {
 	draw() {
 		let t0 = performance.now();
 		this.fg_ctx.clearRect(0, 0, this.bg.width, this.bg.height);
+	
+		for (let c = 0; c < 5; c++) {
 
-		for (let r = 0; r <= this.sudoku.size; r++) {
-			for (let c = 0; c <= this.sudoku.size; c++) {
-
-				if (this.coloring == "sudoku") {
-					let conflicts = this.sudoku.numConflicts(r, c) + 1;
-					let shade = Math.floor(255 / conflicts);
-					this.fg_ctx.fillStyle = "rgb(255," + shade + "," + shade + ")";
-				} else {
-					let ratio = this.sudoku.get(r,c)/9;
-					let shade = Math.floor((1-ratio)*255);
-					this.fg_ctx.fillStyle = "rgb(255," + shade + "," + shade + ")";
-				}
-				this.fg_ctx.fillRect(c * this.sqSize, r * this.sqSize, this.sqSize, this.sqSize);
+			if (this.coloring == "sudoku") {
+				let conflicts = this.sudoku.numConflicts(0, c) + 1;
+				let shade = Math.floor(255 / conflicts);
+				this.fg_ctx.fillStyle = "rgb(255," + shade + "," + shade + ")";
+				//console.log(this.sudoku.board, conflicts);
+			} else {
+				let ratio = this.sudoku.get(0,c)/111;
+				let shade = Math.floor((1-ratio)*255);
+				this.fg_ctx.fillStyle = "rgb(255," + shade + "," + shade + ")";
 			}
+			this.fg_ctx.fillRect(c * this.sqSize, 0 * this.sqSize, this.sqSize, this.sqSize);
+			
 		}
+		let shade = 255/(Math.abs(6-this.settings.fitnessFunction(this.sudoku.board)));
+		this.fg_ctx.fillStyle = "rgb(255," + shade + "," + shade + ")";
+		this.fg_ctx.fillRect(2.5 * this.sqSize, 1.5 * this.sqSize, this.sqSize*2, this.sqSize*0.5);
 
 		// draw thin lines
 		this.fg_ctx.fillStyle = "#000000";
-		for (let r = 0; r <= this.sudoku.size; r++) {
+		for (let r = 0; r <= 1; r++) {
 			this.fg_ctx.beginPath();
 			this.fg_ctx.lineWidth = ((r % this.sudoku.sqSize) == 0) ? 5 : 1;
 			this.fg_ctx.moveTo(0, r * this.sqSize);
@@ -130,18 +132,23 @@ class GAGUI extends GUI {
 			this.fg_ctx.beginPath();
 			this.fg_ctx.lineWidth = ((c % this.sudoku.sqSize) == 0) ? 5 : 1;
 			this.fg_ctx.moveTo(c * this.sqSize, 0);
-			this.fg_ctx.lineTo(c * this.sqSize, this.fg.height);
+			this.fg_ctx.lineTo(c * this.sqSize, this.sqSize);
 			this.fg_ctx.stroke();
 		}
-
-		for (let r = 0; r < this.sudoku.size; r++) {
+		
+		let s="Hi, I am ";
+		for (let r = 0; r < 1; r++) {
 			for (let c = 0; c < this.sudoku.size; c++) {
 				let txt = this.sudoku.get(r, c);
+				s+=String.fromCharCode(txt);
 				let tsize = this.fg_ctx.measureText(txt).width / 2;
 				this.fg_ctx.fillText(this.sudoku.get(r, c), (c + 0.5) * this.sqSize - tsize, (r + 0.5) * this.sqSize + this.fgFontSize / 2);
+				//console.log(this.sudoku.board, this.sudoku.size);
 			}
 		}
 
+		s+="."
+		this.fg_ctx.fillText(s, 0, 200);
 		let t1 = performance.now();
 		let ms = Math.round(t1 - t0);
 	}
@@ -193,7 +200,8 @@ class GAGUI extends GUI {
 		let fitness = document.getElementById('selectfitness').value;
 		this.coloring = "default";
 
-			 if (fitness == 'sudoku') 	{ this.settings.fitnessFunction = SudokuFitness; this.coloring = "sudoku"; } 
+			 if (fitness == 'fF1') 	{ this.settings.fitnessFunction = SudokuFitness; this.coloring = "sudoku"; } 
+		else if (fitness == 'fF2') {this.settings.fitnessFunction = FitnessFunction2; this.coloring = "sudoku";}
 		else if (fitness == 'sum') 		{ this.settings.fitnessFunction = SumFitness; } 
 		else if (fitness == 'sumneg') 	{ this.settings.fitnessFunction = SumNegFitness; } 
 		else if (fitness == 'matchrow') { this.settings.fitnessFunction = MatchRowFitness; } 
@@ -210,15 +218,17 @@ class GAGUI extends GUI {
 		
 		// Sudoku Size Selection
 		this.addText(this.controlDiv, 'sizelabel', c1, top + s*skip, tWidth, cHeight, "Fitness Function:");
-		this.addSelectBox(this.controlDiv, 'selectfitness', c2, top + 0*skip, 100, 25, function() { this.gui.reset();}, 
-            [['sudoku', 'Sudoku'], ['sum', 'Sum Values'], ['matchrow', 'Match Row'], ['matchcol', 'Match Col'], ['checker', 'Checker']]);
-		this.addSlider(this.controlDiv, 'sizeslider', c3, top + s*skip, cWidth, cHeight-10, Math.floor(Math.sqrt(this.sudoku.size)), 1, 6, function() { this.gui.setSudokuSize(); });
-		this.addText(this.controlDiv, 'sizevalue', c3+150, top + s++*skip, cWidth, cHeight, document.getElementById("sizeslider").value);
-		
+		this.addSelectBox(this.controlDiv, 'selectfitness', c2, top+s++*skip, 100, 25, function() { this.gui.reset();}, 
+             [['fF1', 'FF1'], ['fF2', 'FF2']]) //, ['matchrow', 'Match Row'], ['matchcol', 'Match Col'], ['checker', 'Checker']]);
+		// this.addSlider(this.controlDiv, 'sizeslider', c3, top + s*skip, cWidth, cHeight-10, Math.floor(Math.sqrt(this.sudoku.size)), 1, 6, function() { this.gui.setSudokuSize(); });
+		// this.addText(this.controlDiv, 'sizevalue', c3+150, top + s++*skip, cWidth, cHeight, document.getElementById("sizeslider").value);
+		this.addText(this.controlDiv, 'buttonlabel', c1, top+s*skip, tWidth, cHeight, "Try again:")
+		this.addButton(this.controlDiv, 'resbutton', c2, top+s++*skip, cWidth, cHeight, "Reset", function() { this.gui.reset();})
 		// Population Size Selection
 		this.addText(this.controlDiv, 'poplabel', c1, top + s*skip, tWidth, cHeight, "Population Size:");
 		this.addSlider(this.controlDiv, 'popslider', c2, top + s*skip, cWidth, cHeight-10, 200, 20, 1000, function() { this.gui.setPopulationSize(); });
 		this.addText(this.controlDiv, 'popvalue', c3, top + s++*skip, cWidth, cHeight, document.getElementById("popslider").value);
+		console.log(document.getElementById("popslider").value, document.getElementById("popslider").max);
 
 		// Mutation Percentage Selection
 		this.addText(this.controlDiv, 'mutlabel', c1, top + s*skip, tWidth, cHeight, "% Individuals Mutated :");
@@ -234,8 +244,8 @@ class GAGUI extends GUI {
 		this.addText(this.controlDiv, 'elitelabel', c1, top + s*skip, tWidth, cHeight, "% Elite Genes Survive :");
 		this.addSlider(this.controlDiv, 'eliteslider', c2, top + s*skip, cWidth, cHeight-10, 10, 0, 100, function() { this.gui.setEliteSurvivalRate(); });
 		this.addText(this.controlDiv, 'elitevalue', c3, top + s++*skip, cWidth, cHeight, document.getElementById("eliteslider").value);
-	}
 
+	}
 }
 
 

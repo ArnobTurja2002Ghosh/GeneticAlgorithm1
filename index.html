@@ -14,15 +14,24 @@
 <body >
 
 <div id="GAContainer"></div>
-
+<p> I learned GA from Professor David Churchill.</p>
 <script>
 
 // construct the map based on the text in the textarea
 let gui = new GAGUI(document.getElementById("GAContainer"));
+console.log(gui.settings.fitnessFunction);
+let count;
 // set up the main loop
 setInterval(update, 1000 / 60);
 function update() {
-    gui.update();
+    if(gui.settings.fitnessFunction(gui.sudoku.board)<5){
+        gui.update(); 
+        count=0;
+    }
+    else if(count<20){
+        gui.update(); 
+        count++
+    }
 }
 
 </script>
